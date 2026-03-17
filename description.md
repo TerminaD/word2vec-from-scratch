@@ -48,3 +48,5 @@ Preferably, solutions should be provided as a link to a public GitHub repository
 	a. Command-line arguments
 	b. Check for pre-processing
 	c. Progress bar & Tensorboard
+	d. Arg checking
+	e. Unit tests

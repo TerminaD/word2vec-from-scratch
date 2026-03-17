@@ -14,6 +14,8 @@ class Dataloader:
       ):
         self.word_id_array = word_id_array
 
+        if vocab_size == -1:
+            raise Exception("Dataloader: invalid vocab_size. Check word ID map file.")
         self.vocab_size = vocab_size
         self.corpus_size = np.size(word_id_array)
         print(f"Dataloader: corpus_size set to {self.corpus_size}")
