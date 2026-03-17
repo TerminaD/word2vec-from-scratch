@@ -13,6 +13,7 @@ def build_parser():
                      help="The minimum number of times a word need to appear to be included in the vocabulary. If set to 0 or negative, all words are included.")
 	return parser
 
+
 def main():
     parser = build_parser()
     args = parser.parse_args()
@@ -69,3 +70,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

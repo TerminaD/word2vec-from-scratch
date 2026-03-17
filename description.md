@@ -24,7 +24,7 @@ Preferably, solutions should be provided as a link to a public GitHub repository
 		i. Center Word Matrix - W - V * d
 		ii. Context Word Matrix - W' - d * V
 	b. Training loop (with mini-batching)
-		i. Center words: extract B * d from W (TODO: check if it's faster to extract rows or do matmul)
+		i. Center words: extract B * d from W
 		ii. Positive context words: extract B * d from W'
 		iii. Negative context words: B * k * d from W', sampled following *the unigram distribution of the training corpus raised to the 3/4 power* (TODO: check that)
 		iv. Positive scores: dot product between "center words" and "positive context words" along the d-length axis, B * 1
