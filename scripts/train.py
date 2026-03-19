@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from src.dataloader import DataloaderSGNS
 from src.model import Word2VecSGNS
-from src.optimizer import SGDMomentumOptimizer
+from src.optimizer import SGDDecayOptimizer
 
 DATA_DIR = "data"
 ARRAY_FILE_NAME = "word_id_array.npy"
@@ -32,14 +32,14 @@ def build_parser():
         help="Number of distinct center words per training batch. Note that this is not the length of the 0-th axis of input arrays.",
     )
     parser.add_argument(
-        "--learning_rate",
+        "--initial_lr",
         type=float,
-        help="Learning rate for the optimizer"
+        help="Initial learning rate for the optimizer, which uses linear LR decay"
     )
     parser.add_argument(
-        "--momentum",
+        "--final_lr",
         type=float,
-        help="Momentum value for the optimizer"
+        help="Final learning rate for the optimizer, which uses linear LR decay"
     )
     parser.add_argument(
         "--num_neg_samples",
@@ -74,17 +74,19 @@ def main():
         vocab_size = max([word_id for _, word_id in word_id_map]) + 1
     
     model = Word2VecSGNS(vocab_size, args.embed_dim)
-    optimizer = SGDMomentumOptimizer(model, args.learning_rate, args.momentum)
+    optimizer = SGDDecayOptimizer(model, args.learning_rate, args.momentum)
     dataloader = DataloaderSGNS(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
     
     writer = SummaryWriter(f"runs/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
     
     for e in tqdm(range(args.epoch), desc="Epochs"):
         loss_list = []
-        for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Batches"):
+        for batch_idx, batch in tqdm(enumerate(dataloader), desc="Batches"):
+            center_idx, pos_idx, neg_idx = batch
             loss_list.append(model.forward(center_idx, pos_idx, neg_idx))
             model.backward()
-            optimizer.step()
+            progress = batch_idx / len(dataloader)
+            optimizer.step(progress)
                 
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
