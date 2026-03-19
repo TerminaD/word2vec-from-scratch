@@ -1,6 +1,6 @@
 import numpy as np
 
-class SGDOptimizer:
+class SGDMomentumOptimizer:
     def __init__(self, model, learning_rate, momentum):
         self.learning_rate = learning_rate
         self.model = model

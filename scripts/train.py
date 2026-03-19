@@ -1,11 +1,14 @@
 import argparse
 import os
+import datetime
 import numpy as np
 import pickle
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from src.dataloader import DataloaderSGNS
 from src.model import Word2VecSGNS
+from src.optimizer import SGDMomentumOptimizer
 
 DATA_DIR = "data"
 ARRAY_FILE_NAME = "word_id_array.npy"
@@ -27,6 +30,16 @@ def build_parser():
         "--batch_size",
         type=int,
         help="Number of distinct center words per training batch. Note that this is not the length of the 0-th axis of input arrays.",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        help="Learning rate for the optimizer"
+    )
+    parser.add_argument(
+        "--momentum",
+        type=float,
+        help="Momentum value for the optimizer"
     )
     parser.add_argument(
         "--num_neg_samples",
@@ -51,7 +64,7 @@ def main():
     
     array_path = os.path.join(DATA_DIR, args.preproc_dir_name, ARRAY_FILE_NAME)
     if not os.path.exists(array_path):
-        raise RuntimeError("Preprocessing not done. Aborting")
+        raise RuntimeError("Preprocessing not done before training. Aborting")
     map_path = os.path.join(DATA_DIR, args.preproc_dir_name, MAP_FILE_NAME)
     
     word_id_array = np.load(array_path)
@@ -61,14 +74,20 @@ def main():
         vocab_size = max([word_id for _, word_id in word_id_map]) + 1
     
     model = Word2VecSGNS(vocab_size, args.embed_dim)
+    optimizer = SGDMomentumOptimizer(model, args.learning_rate, args.momentum)
     dataloader = DataloaderSGNS(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
     
+    writer = SummaryWriter(f"runs/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
+    
     for e in tqdm(range(args.epoch), desc="Epochs"):
+        loss_list = []
         for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Batches"):
-            loss = model.forward(center_idx, pos_idx, neg_idx)
+            loss_list.append(model.forward(center_idx, pos_idx, neg_idx))
             model.backward()
-            
-            
+            optimizer.step()
+                
+        avg_loss = sum(loss_list) / len(loss_list)
+        writer.add_scalar("Loss/train", avg_loss, e)
 
 if __name__ == "__main__":
     main()

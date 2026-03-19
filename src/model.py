@@ -8,6 +8,8 @@ class Word2VecSGNS:
         seed=42
     ):
         # Hyperparameters
+        if vocab_size == -1:
+            raise RuntimeError("model.py: vocab_size is -1. Potentially errors with reading word ID map file")
         self.vocab_size = vocab_size  # The size of vocabulary
         self.embed_dim = embed_dim  # The dimension of the embedding
 
