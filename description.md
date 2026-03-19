@@ -50,3 +50,4 @@ Preferably, solutions should be provided as a link to a public GitHub repository
 	c. Progress bar & Tensorboard
 	d. Arg checking
 	e. Unit tests
+	f. Sentence breaks (need new dataset)

@@ -39,6 +39,9 @@ def main():
     args = parser.parse_args()
     
     array_path = os.path.join(DATA_DIR, args.preproc_dir_name, ARRAY_FILE_NAME)
+    if not os.path.exists(array_path):
+        print("Preprocessing not done. Aborting")
+        return
     map_path = os.path.join(DATA_DIR, args.preproc_dir_name, MAP_FILE_NAME)
     word_id_array = np.load(array_path)
     vocab_size = -1
