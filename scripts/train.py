@@ -1,5 +1,7 @@
 import argparse
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import datetime
 import numpy as np
 import pickle
@@ -11,6 +13,7 @@ from src.model import Word2VecSGNS
 from src.optimizer import SGDDecayOptimizer
 
 DATA_DIR = "data"
+MODELS_DIR = "models"
 ARRAY_FILE_NAME = "word_id_array.npy"
 MAP_FILE_NAME = "word_id_map.pkl"
 
@@ -71,25 +74,33 @@ def main():
     vocab_size = -1
     with open(map_path, 'rb') as map_f:
         word_id_map = pickle.load(map_f)
-        vocab_size = max([word_id for _, word_id in word_id_map]) + 1
+        vocab_size = max([word_id for _, word_id in word_id_map.items()]) + 1
     
     model = Word2VecSGNS(vocab_size, args.embed_dim)
-    optimizer = SGDDecayOptimizer(model, args.learning_rate, args.momentum)
+    optimizer = SGDDecayOptimizer(model, args.initial_lr, args.final_lr)
     dataloader = DataloaderSGNS(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
     
     writer = SummaryWriter(f"runs/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
     
     for e in tqdm(range(args.epoch), desc="Epochs"):
         loss_list = []
-        for batch_idx, batch in tqdm(enumerate(dataloader), desc="Batches"):
-            center_idx, pos_idx, neg_idx = batch
+        batch_idx = 0
+        for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Batches"):
             loss_list.append(model.forward(center_idx, pos_idx, neg_idx))
             model.backward()
             progress = batch_idx / len(dataloader)
             optimizer.step(progress)
+            batch_idx += 1
                 
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
+
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    run_name = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    save_path = os.path.join(MODELS_DIR, f"{run_name}.npz")
+    np.savez(save_path, **model.get_parameters())
+    print(f"Model saved to {save_path}")
+
 
 if __name__ == "__main__":
     main()

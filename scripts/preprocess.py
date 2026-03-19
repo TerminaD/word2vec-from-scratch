@@ -50,6 +50,8 @@ def main():
                 word_id_map[word] = curr_word_id
                 curr_word_id += 1
                 
+        print(f"Ratio of vocabulary kept: {curr_word_id / len(freq_map)}")
+                
     else:
         curr_word_id = 0
         for word in word_list:
