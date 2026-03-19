@@ -4,7 +4,8 @@ import numpy as np
 import pickle
 from tqdm import tqdm
 
-from src.dataloader import Dataloader
+from src.dataloader import DataloaderSGNS
+from src.model import Word2VecSGNS
 
 DATA_DIR = "data"
 ARRAY_FILE_NAME = "word_id_array.npy"
@@ -16,6 +17,11 @@ def build_parser():
         "--preproc_dir_name",
         type=str,
         help="The directory name containing the preprocessing artifacts. Do not include the data directory name.",
+    )
+    parser.add_argument(
+        "--epoch",
+        type=int,
+        help="Number of epochs to train."
     )
     parser.add_argument(
         "--batch_size",
@@ -32,6 +38,11 @@ def build_parser():
         type=int,
         help="The radius of the positive context window. If center word position is i and window_size is j, positions i-j, ..., i-1, i+1, ..., i+j would be the context.",
     )
+    parser.add_argument(
+        "--embed_dim",
+        type=int,
+        help="Dimension of the embedding vector",
+    )
     return parser
 
 def main():
@@ -40,18 +51,24 @@ def main():
     
     array_path = os.path.join(DATA_DIR, args.preproc_dir_name, ARRAY_FILE_NAME)
     if not os.path.exists(array_path):
-        print("Preprocessing not done. Aborting")
-        return
+        raise RuntimeError("Preprocessing not done. Aborting")
     map_path = os.path.join(DATA_DIR, args.preproc_dir_name, MAP_FILE_NAME)
+    
     word_id_array = np.load(array_path)
     vocab_size = -1
     with open(map_path, 'rb') as map_f:
         word_id_map = pickle.load(map_f)
         vocab_size = max([word_id for _, word_id in word_id_map]) + 1
-    dataloader = Dataloader(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
     
-    for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Per-batch progress"):
-        
+    model = Word2VecSGNS(vocab_size, args.embed_dim)
+    dataloader = DataloaderSGNS(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
+    
+    for e in tqdm(range(args.epoch), desc="Epochs"):
+        for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Batches"):
+            loss = model.forward(center_idx, pos_idx, neg_idx)
+            model.backward()
+            
+            
 
 if __name__ == "__main__":
     main()

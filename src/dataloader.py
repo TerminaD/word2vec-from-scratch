@@ -1,9 +1,8 @@
-import logging
 import math
 import numpy as np
 
 
-class Dataloader:
+class DataloaderSGNS:
     def __init__(
         self, 
         word_id_array: np.ndarray, 
@@ -11,6 +10,7 @@ class Dataloader:
         batch_size: int, 
         num_negative_samples: int,
         window_size: int,
+        seed=42
       ):
         self.word_id_array = word_id_array
 
@@ -29,7 +29,7 @@ class Dataloader:
         self.neg_context_dist = raw_power_dist / np.sum(raw_power_dist)
 
         self.pos = 0	# Cursor for current position
-        self.rng = np.random.default_rng(42)
+        self.rng = np.random.default_rng(seed)
 
 
     def __len__(self):
@@ -60,7 +60,7 @@ class Dataloader:
         center_ids_array = self.word_id_array[I[mask]]
         pos_context_ids_array = self.word_id_array[context_positions[mask]]
         
-        # For simplicity of implementation, center words and positive context words
+        # TODO: For simplicity of implementation, center words and positive context words
         # are not excluded from negative words. This does not have a large impact for
         # large vocabulary sizes, but could be improved in the future.
         neg_context_ids_array = self.rng.choice(

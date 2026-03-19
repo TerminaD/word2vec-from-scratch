@@ -1,6 +1,6 @@
 import numpy as np
 
-class Word2VecSkipGramNegativeSampling:
+class Word2VecSGNS:
     def __init__(
         self,
         vocab_size: int,
@@ -30,7 +30,9 @@ class Word2VecSkipGramNegativeSampling:
         self._neg_embeds = None
         self._pos_sigmoid = None
         self._neg_sigmoid = None
-
+        self._center_grad = None
+        self._pos_grad = None
+        self._neg_grad = None
 
     def forward(self, center_idx, pos_idx, neg_idx) -> float:
         # Cached for backward pass
@@ -65,25 +67,15 @@ class Word2VecSkipGramNegativeSampling:
         # Gradients are normalized by actual batch size, to match mean loss
         actual_batch_size = pos_intermediate.shape[0]
 
-        center_grad = pos_intermediate[:, np.newaxis] * self._pos_embeds + \
+        self._center_grad = pos_intermediate[:, np.newaxis] * self._pos_embeds + \
             np.sum(neg_intermediate[:, :, np.newaxis] * self._neg_embeds, axis=1)  # Actual batch size * embed_dim
-        center_grad /= actual_batch_size
+        self._center_grad /= actual_batch_size
             
         # Actual batch size * embed_dim
-        pos_grad = pos_intermediate[:, np.newaxis] * self._center_embeds / actual_batch_size
+        self._pos_grad = pos_intermediate[:, np.newaxis] * self._center_embeds / actual_batch_size
         
         # Actual batch size * num_negative_samples * embed_dim
-        neg_grad = neg_intermediate[:, :, np.newaxis] * self._center_embeds[:, np.newaxis, :] / actual_batch_size
-        
-        return {
-            'center_idx': self._center_idx,
-            'pos_idx': self._pos_idx,
-            "neg_idx": self._neg_idx,
-            
-            'center_grad': center_grad,
-            'pos_grad': pos_grad,
-            'neg_grad': neg_grad
-        }
+        self._neg_grad = neg_intermediate[:, :, np.newaxis] * self._center_embeds[:, np.newaxis, :] / actual_batch_size
 
 
     def get_embedding(self, word_idx):
