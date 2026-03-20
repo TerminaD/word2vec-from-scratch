@@ -71,7 +71,7 @@ class Word2VecSGNS:
 
         self._center_grad = pos_intermediate[:, np.newaxis] * self._pos_embeds + \
             np.sum(neg_intermediate[:, :, np.newaxis] * self._neg_embeds, axis=1)  # Actual batch size * embed_dim
-        self._center_grad /= actual_batch_size
+        # self._center_grad /= actual_batch_size
             
         # Actual batch size * embed_dim
         self._pos_grad = pos_intermediate[:, np.newaxis] * self._center_embeds / actual_batch_size

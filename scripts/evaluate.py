@@ -9,18 +9,19 @@ from scipy import stats
 
 from src.model import Word2VecSGNS
 
-MODELS_DIR = "models"
-MODEL_NAME = "model.npz"
-WORD_ID_MAP_NAME = "word_id_map.pkl"
 EVAL_SET_FULL_PATH = os.path.join("data", "ws-353.csv")
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Evaluation script")
     parser.add_argument(
-        "--model_dir_name",
+        "--model_path",
         type=str,
-        default="2026-03-19-17-14-27",
-        help="The name of the directory containing the model and word ID map file. This is not the relative or absolute path. By default, should be in the shape of a timestamp."
+        help="Relative path to model checkpoint"
+    )
+    parser.add_argument(
+        "--word_map_path",
+        type=str,
+        help="Relative path to word ID map file"
     )
     return parser
 
@@ -29,13 +30,13 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    data = np.load(os.path.join(MODELS_DIR, args.model_dir_name, MODEL_NAME))
+    data = np.load(args.model_path)
     vocab_size, embed_dim = data["center_mat"].shape
     model = Word2VecSGNS(vocab_size, embed_dim)
     model.center_mat = data["center_mat"]
     model.context_mat = data["context_mat"]
     
-    with open(os.path.join(MODELS_DIR, args.model_dir_name, WORD_ID_MAP_NAME), 'rb') as f:
+    with open(args.word_map_path, 'rb') as f:
         word_id_map = pickle.load(f)
     
     word_ids_1 = []

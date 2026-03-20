@@ -51,3 +51,7 @@ Preferably, solutions should be provided as a link to a public GitHub repository
 	d. Arg checking
 	e. Unit tests
 	f. Sentence breaks (need new dataset)
+
+TODO:
+1. frequent word sub-sampling
+2. 

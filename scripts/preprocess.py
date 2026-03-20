@@ -32,6 +32,7 @@ def main():
         word_list = word_list[:args.corpus_size]
     
     word_id_map = {}
+    curr_word_id = 0
     
     if args.min_frequency > 1:
         freq_map = {}
@@ -40,18 +41,14 @@ def main():
                 freq_map[word] += 1
             else:
                 freq_map[word] = 1
-                
-        curr_word_id = 1	# In this case, word ID 0 is reserved for words excluded from the vocabulary
-                
+
         for word, freq in freq_map.items():
-            if freq < args.min_frequency:
-                word_id_map[word] = 0
-            else:
+            if freq >= args.min_frequency:
                 word_id_map[word] = curr_word_id
                 curr_word_id += 1
-                
+
         print(f"Ratio of vocabulary kept: {curr_word_id / len(freq_map)}")
-                
+
     else:
         curr_word_id = 0
         for word in word_list:
@@ -59,8 +56,8 @@ def main():
                 continue
             word_id_map[word] = curr_word_id
             curr_word_id += 1
-            
-    word_id_list = [word_id_map[word] for word in word_list]
+
+    word_id_list = [word_id_map[word] for word in word_list if word in word_id_map]
     word_id_array = np.array(word_id_list)
 
     with open(f"{preproc_result_path}/word_id_map.pkl", "wb") as map_file:
