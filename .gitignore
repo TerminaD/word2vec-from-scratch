@@ -1,5 +1,6 @@
 data/text8.txt
 data/cs*/
+data/toy
 scratch.py
 runs
 **/__pycache__

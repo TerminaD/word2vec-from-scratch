@@ -86,6 +86,9 @@ def main():
     
     total_batches = len(dataloader) * args.epoch
     global_batch_idx = 0
+    time_stamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    curr_models_dir = os.path.join(MODELS_DIR, time_stamp)
+    os.makedirs(curr_models_dir, exist_ok=True)
 
     for e in tqdm(range(args.epoch), desc="Epochs"):
         loss_list = []
@@ -95,14 +98,14 @@ def main():
             progress = global_batch_idx / total_batches
             optimizer.step(progress)
             global_batch_idx += 1
-                
+
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
-    
-    
-    time_stamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    curr_models_dir = os.path.join(MODELS_DIR, time_stamp)
-    os.makedirs(curr_models_dir, exist_ok=True)
+
+        if (e + 1) % 5 == 0:
+            checkpoint_path = os.path.join(curr_models_dir, f"checkpoint_epoch_{e + 1}.npz")
+            np.savez(checkpoint_path, **model.get_parameters())
+
     save_path = os.path.join(curr_models_dir, "model.npz")
     np.savez(save_path, **model.get_parameters())
     shutil.copy(map_path, os.path.join(curr_models_dir, MAP_FILE_NAME))
