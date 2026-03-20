@@ -80,6 +80,7 @@ class Word2VecSGNS:
         self._neg_grad = neg_intermediate[:, :, np.newaxis] * self._center_embeds[:, np.newaxis, :] / actual_batch_size
 
 
+    # TODO: experimenting with (center + context) / 2
     def get_embedding(self, word_idx):
         return self.center_mat[word_idx]
 

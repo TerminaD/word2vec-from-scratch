@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+import shutil
 
 from src.dataloader import DataloaderSGNS
 from src.model import Word2VecSGNS
@@ -72,6 +73,7 @@ def main():
     
     word_id_array = np.load(array_path)
     vocab_size = -1
+    word_id_map = None
     with open(map_path, 'rb') as map_f:
         word_id_map = pickle.load(map_f)
         vocab_size = max([word_id for _, word_id in word_id_map.items()]) + 1
@@ -94,12 +96,15 @@ def main():
                 
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
-
-    os.makedirs(MODELS_DIR, exist_ok=True)
-    run_name = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    save_path = os.path.join(MODELS_DIR, f"{run_name}.npz")
+    
+    
+    time_stamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    curr_models_dir = os.path.join(MODELS_DIR, time_stamp)
+    os.makedirs(curr_models_dir, exist_ok=True)
+    save_path = os.path.join(curr_models_dir, "model.npz")
     np.savez(save_path, **model.get_parameters())
-    print(f"Model saved to {save_path}")
+    shutil.copy(map_path, os.path.join(curr_models_dir, MAP_FILE_NAME))
+    print(f"Model and word map saved")
 
 
 if __name__ == "__main__":
