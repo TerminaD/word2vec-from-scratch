@@ -84,15 +84,17 @@ def main():
     
     writer = SummaryWriter(f"runs/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
     
+    total_batches = len(dataloader) * args.epoch
+    global_batch_idx = 0
+
     for e in tqdm(range(args.epoch), desc="Epochs"):
         loss_list = []
-        batch_idx = 0
         for center_idx, pos_idx, neg_idx in tqdm(dataloader, desc="Batches"):
             loss_list.append(model.forward(center_idx, pos_idx, neg_idx))
             model.backward()
-            progress = batch_idx / len(dataloader)
+            progress = global_batch_idx / total_batches
             optimizer.step(progress)
-            batch_idx += 1
+            global_batch_idx += 1
                 
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
