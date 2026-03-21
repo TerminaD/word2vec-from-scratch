@@ -1,8 +1,4 @@
 data/text8.txt
 data/cs*/
-data/toy
-scratch.py
-runs
 **/__pycache__
-models
 .DS_Store

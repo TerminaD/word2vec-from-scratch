@@ -15,10 +15,10 @@ class DataloaderSGNS:
         self.word_id_array = word_id_array
 
         if vocab_size == -1:
-            raise Exception("Dataloader: invalid vocab_size. Check word ID map file.")
+            raise Exception("dataloader.py: invalid vocab_size. Check word ID map file.")
         self.vocab_size = vocab_size
         self.corpus_size = np.size(word_id_array)
-        print(f"Dataloader: corpus_size set to {self.corpus_size}")
+        print(f"dataloader.py: corpus_size set to {self.corpus_size}")
         self.batch_size = batch_size
         self.num_negative_samples = num_negative_samples  # Number of negative samples per (center, context) pair
         self.window_size = window_size      # The radius of the sliding window used to generate positive context words. If center word position is i and window_size is j, positions i-j, ..., i-1, i+1, ..., i+j would be context
