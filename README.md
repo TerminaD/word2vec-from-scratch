@@ -101,9 +101,7 @@ word2vec/
 
 
 # Method
-
 ## SGNS Word2Vec: An Overview
-
 The goal of any word2vec model is to map words to vectors that capture their semantic meaning. An SGNS (Skip-Gram with Negative Sampling) word2vec model achieves this through the following process:
 
 1. **Generating word pairs.** For each word in the corpus (the center word), collect positive context words — those within a fixed-size window around the center word — and negative context words — those randomly sampled from a noise distribution over the entire vocabulary.
@@ -114,9 +112,7 @@ This process clusters words that frequently co-occur in the corpus, while pushin
 
 
 ## Dataset and Metric Selection
-
 ### text8
-
 The training set used for this project is text8, a partial text dump of Wikipedia containing approximately 17 million words. The text is cleaned to lowercase and delimited by whitespace.
 
 text8 is chosen for two reasons: its size strikes a good balance between semantic richness and training time, and its format requires no additional cleaning or preprocessing.
@@ -125,7 +121,6 @@ The dataset file is downloaded from http://mattmahoney.net/dc/text8.zip on 15/03
 
 
 ### WordSimilarity-353
-
 Because the skip-gram word2vec model does not have an intrinsic evaluation metric, a downstream task — consisting of an evaluation set and a metric — is needed to assess model performance.
 
 I use the WordSimilarity-353 test collection as the evaluation set. It consists of 353 word pairs, each annotated with a human-judged similarity score ranging from 0 to 10. This dataset is a natural fit because it directly measures the kind of semantic relatedness that word2vec is designed to capture. The file is downloaded from https://gabrilovich.com/resources/data/wordsim353/wordsim353.zip on 19/03/2026 at 9:05 PM. As this dataset is also no longer a work in progress, the file should remain unchanged.
@@ -134,7 +129,6 @@ The evaluation metric is Spearman's rank correlation coefficient (SRCC) between 
 
 
 ## Dataset Preprocessing
-
 The text8 dataset undergoes two preprocessing steps before training: building a dictionary that maps each word to an integer ID, and converting the corpus into an array of these integer IDs.
 
 Two additional mechanisms are applied during preprocessing to help the model learn more meaningful semantic information.
@@ -147,7 +141,6 @@ where $f$ is the word's corpus frequency and $t$ is the subsampling threshold [1
 
 
 ## Dataloader
-
 At each iteration, the dataloader produces a batch of training pairs: (center word, positive context word) and (center word, negative context word). These are represented by three arrays: center word IDs, positive context word IDs, and negative context word IDs.
 
 The dataloader iterates over each center word in the corpus and, for each center word, iterates over the words within its context window. Each (center word, context word) pair is recorded by appending the respective IDs to the center and positive arrays.
@@ -160,12 +153,10 @@ The context window radius and the number of negative samples per center word are
 
 
 ## Model Architecture
-
 Following [2], the model consists of two weight matrices: a center matrix and a context matrix. Both have shape (vocabulary size × embedding dimension), where each row stores the embedding vector for a single word.
 
 
 ## Forward Pass and Loss Function
-
 A forward pass consists of two steps:
 
 1. **Embedding lookup.** For each center word ID, extract the corresponding center embedding $u$ from the center matrix. Similarly, extract the positive context embedding $v^+$ and $k$ negative context embeddings $v_1^-,\dots,v_k^-$ from the context matrix.
@@ -176,7 +167,6 @@ $$\mathcal{L} = -\log\sigma(v^+\!\cdot u) - \sum_{i=1}^{k}\log\sigma(-v_i^-\!\cd
 This loss encourages positive pairs to have similar embeddings (high dot product) and negative pairs to have dissimilar embeddings (low dot product). In a batched setting, the loss is the mean over all data points in the batch.
 
 ## Backward Pass
-
 The partial derivatives of $\mathcal{L}$ with respect to each parameter are:
 
 $$\begin{align}
@@ -195,7 +185,6 @@ The gradients are also scaled down by the of the actual batch size (the number o
 
 
 ## Parameter Updates
-
 Parameters are updated using stochastic gradient descent with global linear learning rate decay, as in [2].
 
 At each optimizer step, the stored gradients, scaled by the current learning rate, are subtracted from the corresponding rows of the weight matrices. The cached word IDs serve as row indices, enabling sparse weight updates: because each matrix row is independent and only a subset of rows is active per batch, this avoids unnecessary computation and reduces memory usage.
@@ -204,7 +193,6 @@ A global batch counter, maintained across epochs, controls the linear decay of t
 
 
 ## Evaluation
-
 As described above, evaluation uses the WordSimilarity-353 dataset and SRCC metric. When loading the evaluation set, any row containing a word absent from the model's vocabulary is discarded. A coverage rate is reported afterward. This approach is straightforward and ensures the evaluation reflects only what the model has actually learned, rather than guesswork.
 
 

@@ -54,9 +54,13 @@ class DataloaderSGNS:
         i_vals = np.arange(self.pos, fin_pos)
         j_vals = np.concatenate([np.arange(-self.window_size, 0), np.arange(1, self.window_size + 1)])
 
+        # Dynamic window radii
+        sampled_radii = self.rng.integers(1, self.window_size + 1, size=curr_batch_size)
+
         I, J = np.meshgrid(i_vals, j_vals)
         context_positions = I + J
-        mask = (context_positions >= 0) & (context_positions < self.corpus_size)
+        mask = (context_positions >= 0) & (context_positions < self.corpus_size) \
+            & (np.abs(J) <= sampled_radii[np.newaxis, :])
         center_ids_array = self.word_id_array[I[mask]]
         pos_context_ids_array = self.word_id_array[context_positions[mask]]
         
