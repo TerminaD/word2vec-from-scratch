@@ -168,7 +168,7 @@ A forward pass consists of two steps:
 1. **Embedding lookup.** For each center word ID, extract the corresponding center embedding $u$ from the center matrix. Similarly, extract the positive context embedding $v^+$ and $k$ negative context embeddings $v_1^-,\dots,v_k^-$ from the context matrix.
 2. **Loss computation.** Compute the negative log-likelihood loss:
 
-$$\mathcal{L} = -\log\sigma(v^+\!\cdot u) - \sum_{i=1}^{k}\log\sigma(-v_i^-\!\cdot u)$$
+$$\mathcal{L} = -\log\sigma(v^+ \cdot u) - \sum_{i=1}^{k}\log\sigma(-v_i^-\cdot u)$$
 
 This loss encourages positive pairs to have similar embeddings (high dot product) and negative pairs to have dissimilar embeddings (low dot product). In a batched setting, the loss is the mean over all data points in the batch.
 
@@ -176,9 +176,9 @@ This loss encourages positive pairs to have similar embeddings (high dot product
 The partial derivatives of $\mathcal{L}$ with respect to each parameter are:
 
 $$\begin{align}
-\frac{\partial\mathcal{L}}{\partial u} &= \bigl(\sigma(v^+\!\cdot u) - 1\bigr)\,v^+ + \sum_{i=1}^{k}\bigl(1 - \sigma(-v_i^-\!\cdot u)\bigr)\,v_i^- \\[6pt]
-\frac{\partial\mathcal{L}}{\partial v^+} &= \bigl(\sigma(v^+\!\cdot u) - 1\bigr)\,u \\[6pt]
-\frac{\partial\mathcal{L}}{\partial v_i^-} &= \bigl(1 - \sigma(-v_i^-\!\cdot u)\bigr)\,u
+\frac{\partial\mathcal{L}}{\partial u} &= \bigl(\sigma(v^+\cdot u) - 1\bigr)\,v^+ + \sum_{i=1}^{k}\bigl(1 - \sigma(-v_i^-\cdot u)\bigr)\,v_i^- \\
+\frac{\partial\mathcal{L}}{\partial v^+} &= \bigl(\sigma(v^+\cdot u) - 1\bigr)\,u \\
+\frac{\partial\mathcal{L}}{\partial v_i^-} &= \bigl(1 - \sigma(-v_i^-\cdot u)\bigr)\,u
 \end{align}$$
 
 Several terms in these expressions are already computed during the forward pass. To avoid redundant work, the following intermediate values are cached during the forward pass for reuse in the backward pass:
