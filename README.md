@@ -136,7 +136,9 @@ Two additional mechanisms are applied during preprocessing to help the model lea
 1. **Low-frequency cutoff.** Words whose occurrence counts fall below a threshold are excluded from both the vocabulary and the corpus array. This removes extremely rare words (e.g., "anarchiste") for which the model cannot learn meaningful embeddings, eliminating wasted computation. With a threshold of 5, 28.08% of the vocabulary and 98.32% of all word tokens are retained — demonstrating that only a small fraction of vocabulary entries accounts for the vast majority of the corpus.
 
 2. **Frequency-based subsampling.** Extremely frequent words (e.g., "a", "the") co-occur with nearly every other word, so training on them contributes little semantic information. Frequency-based subsampling retains each word in the corpus array with probability:
-$$\min\left(\sqrt{\frac{t}{f}} + \frac{t}{f},\; 1\right)$$
+   
+$$\min \left( \sqrt{\frac{t}{f}} + \frac{t}{f}, 1 \right)$$
+
 where $f$ is the word's corpus frequency and $t$ is the subsampling threshold [1]. With $t = 10^{-5}$ (applied after low-frequency cutoff), only 34.59% of words are retained. Although this may seem aggressive, most of the discarding targets high-frequency words: for example, "the" (frequency ≈ 0.07) is kept only 12.10% of the time, while a word with frequency 0.000025 is never discarded. Frequency-based subsampling thus preserves most of the corpus's semantic content while reducing training compute to roughly one-third.
 
 
@@ -176,9 +178,9 @@ This loss encourages positive pairs to have similar embeddings (high dot product
 The partial derivatives of $\mathcal{L}$ with respect to each parameter are:
 
 $$\begin{align}
-\frac{\partial\mathcal{L}}{\partial u} &= \bigl(\sigma(v^+\cdot u) - 1\bigr)\,v^+ + \sum_{i=1}^{k}\bigl(1 - \sigma(-v_i^-\cdot u)\bigr)\,v_i^- \\
-\frac{\partial\mathcal{L}}{\partial v^+} &= \bigl(\sigma(v^+\cdot u) - 1\bigr)\,u \\
-\frac{\partial\mathcal{L}}{\partial v_i^-} &= \bigl(1 - \sigma(-v_i^-\cdot u)\bigr)\,u
+\frac{\partial\mathcal{L}}{\partial u} &= \bigl(\sigma(v^+\cdot u) - 1\bigr) v^+ + \sum_{i=1}^{k}\bigl(1 - \sigma(-v_i^-\cdot u)\bigr) v_i^- \\
+\frac{\partial\mathcal{L}}{\partial v^+} &= \bigl(\sigma(v^+\cdot u) - 1\bigr) u \\
+\frac{\partial\mathcal{L}}{\partial v_i^-} &= \bigl(1 - \sigma(-v_i^-\cdot u)\bigr) u
 \end{align}$$
 
 Several terms in these expressions are already computed during the forward pass. To avoid redundant work, the following intermediate values are cached during the forward pass for reuse in the backward pass:
