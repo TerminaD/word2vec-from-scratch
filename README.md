@@ -44,7 +44,7 @@ For more information about the arguments, run:
 python scripts/train.py -h
 ```
 
-After or during training, you can monitor the progressing of training loss and Spearman's correlation coefficient (SCC, my evaluation metric of choice) with TensorBoard. To start the TensorBoard web app, run:
+After or during training, you can monitor the progressing of training loss and Spearman's rank correlation coefficient (SRCC, my evaluation metric of choice) with TensorBoard. To start the TensorBoard web app, run:
 ```bash
 tensorboard --logdir=runs/
 ```
@@ -53,7 +53,7 @@ After that, go to `http://localhost:6006/` to access the web app.
 
 
 ## 5. Evaluate The Model
-A script is provided for calculating SCC on a pre-trained model file. Run:
+A script is provided for calculating SRCC on a pre-trained model file. Run:
 ```bash
 python scripts/evaluate.py --model_path=RELATIVE/PATH/TO/MODEL/FILE --word_map_path=RELATIVE/PATH/TO/WORD/MAP/FILE
 ```
