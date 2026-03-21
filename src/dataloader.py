@@ -38,6 +38,7 @@ class DataloaderSGNS:
 
     def __iter__(self):
         self.pos = 0
+        self.order = self.rng.permutation(self.corpus_size)
         return self
 
 
@@ -51,14 +52,14 @@ class DataloaderSGNS:
             fin_pos = self.corpus_size
             curr_batch_size = fin_pos - self.pos
 
-        i_vals = np.arange(self.pos, fin_pos)
-        j_vals = np.concatenate([np.arange(-self.window_size, 0), np.arange(1, self.window_size + 1)])
+        center_idx = self.order[self.pos:fin_pos]
+        context_offsets = np.concatenate([np.arange(-self.window_size, 0), np.arange(1, self.window_size + 1)])
 
         # Dynamic window radii
         sampled_radii = self.rng.integers(1, self.window_size + 1, size=curr_batch_size)
 
-        I, J = np.meshgrid(i_vals, j_vals)
-        context_positions = I + J
+        I, J = np.meshgrid(center_idx, context_offsets)
+        context_positions = I + J   # All context positions
         mask = (context_positions >= 0) & (context_positions < self.corpus_size) \
             & (np.abs(J) <= sampled_radii[np.newaxis, :])
         center_ids_array = self.word_id_array[I[mask]]

@@ -125,7 +125,7 @@ Because the skip-gram word2vec model does not have an intrinsic evaluation metri
 
 I use the WordSimilarity-353 test collection as the evaluation set. It consists of 353 word pairs, each annotated with a human-judged similarity score ranging from 0 to 10. This dataset is a natural fit because it directly measures the kind of semantic relatedness that word2vec is designed to capture. The file is downloaded from https://gabrilovich.com/resources/data/wordsim353/wordsim353.zip on 19/03/2026 at 9:05 PM. As this dataset is also no longer a work in progress, the file should remain unchanged.
 
-The evaluation metric is Spearman's rank correlation coefficient (SRCC) between predicted similarity scores and human scores. Predicted similarity is computed as the cosine similarity between two words' embedding vectors: because cosine similarity measures angular proximity, it reflects how semantically close the model judges two words to be. SRCC is appropriate here because the predicted scores and human scores occupy different numerical ranges, and SRCC is scale-invariant — it compares only the relative ordering of values, not their magnitudes. Concretely, SRCC independently ranks the values within each list and then measures how well the two rankings agree, making it a robust measure of monotonic association.
+The evaluation metric is Spearman's rank correlation coefficient (SRCC) between predicted similarity scores and human scores. Predicted similarity is computed as the cosine similarity between two words' embedding vectors: because cosine similarity measures angular proximity, it reflects how semantically close the model judges two words to be. SRCC is appropriate here because the predicted scores and human scores occupy different numerical ranges, and SRCC is scale-invariant — it compares only the relative ordering of values, not their magnitudes. Concretely, SRCC independently ranks the values within each list and then measures how well the two rankings agree, making it a robust measure of monotonic association. SRCC falls in a range of [-1, 1], where -1 denotes complete negative correlation, 0 denotes no correlation, and 1 denotes complete positive correlation.
 
 
 ## Dataset Preprocessing
@@ -147,9 +147,15 @@ The dataloader iterates over each center word in the corpus and, for each center
 
 For each center word, a fixed number of negative context words are randomly drawn from a unigram distribution raised to the 3/4 power [1]. This exponent boosts the sampling probability of rare words and reduces that of frequent words, which improves semantic learning — similar in spirit to frequency-based subsampling during preprocessing.
 
-Training examples are grouped into batches with the goals of reducing training time and improving gradient stability. In practice, I found that per-epoch training time remained nearly constant across a wide range of batch sizes, likely because the CPU cannot fully exploit parallelism even with a highly vectorized library like NumPy.
+There are a number of features worth discussing:
 
-The context window radius and the number of negative samples per center word are both tunable hyperparameters. Following [2], both are set to 5.
+1. **Batching.** Training examples are grouped into batches with the goals of reducing training time and improving gradient stability. In practice, I found that per-epoch training time remained nearly constant across a wide range of batch sizes, likely because the CPU cannot fully exploit parallelism even with a highly vectorized library like NumPy.
+
+2. **Dynamic context window.** Following [2], the context window size for each center word is uniformly chosen from [1, max context window radius] at random. This helps to give more weight to closer co-occurring word pairs, and also reduces the size of training data eventually fed into the model by roughly 30%.
+
+3. **Shuffling.** For each epoch, the order of center words are shuffled. The added randomness helps with convergence, while keeping the center-positive and center-negative relations intact.
+
+The max context window radius and the number of negative samples per center word are both tunable hyperparameters. Following [2], both are set to 5.
 
 
 ## Model Architecture
@@ -191,9 +197,21 @@ At each optimizer step, the stored gradients, scaled by the current learning rat
 
 A global batch counter, maintained across epochs, controls the linear decay of the learning rate over the full course of training. My experiments show that without learning rate decay, training loss and SRCC can plateau or deteriorate in later epochs, consistent with the observation in [2] that decay helps prevent overfitting.
 
+Batch size is also a tunable hyperparameter, and is set to 5. This is motivated by theoretical observations that a high epoch count can lead to overfitting [2], as well as the flattening of loss and SRCC curves during my experiments.
+
 
 ## Evaluation
 As described above, evaluation uses the WordSimilarity-353 dataset and SRCC metric. When loading the evaluation set, any row containing a word absent from the model's vocabulary is discarded. A coverage rate is reported afterward. This approach is straightforward and ensures the evaluation reflects only what the model has actually learned, rather than guesswork.
+
+
+# Results
+Using the aforementioned hyperparameter values, I successfully trained a word2vec model. The loss and SRCC curve during training are as follows:
+
+![Loss curve](images/loss.png)
+
+![SRCC curve](images/srcc.png)
+
+During the course of training, the loss decreases and SRCC increases, both quickly at first but gradually slowing down, confirming that global learning rate decay is behaving as expected and preventing overfitting. The SRCC eventually reaches a value of 0.645, indicating strong positive correlation between the human similarity scores and the predicted scores.
 
 
 # References
