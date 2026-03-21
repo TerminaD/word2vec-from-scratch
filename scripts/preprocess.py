@@ -9,7 +9,7 @@ def build_parser():
 	parser = argparse.ArgumentParser(description="Dataset preprocessing script")
 	parser.add_argument("--corpus_size", type=int, default=0,
                      help="The number of words at the start of the corpus that are preprocessed. Default to 0. If set to 0 or negative, the entire corpus is preprocessed.")
-	parser.add_argument("--min_frequency", type=int, default=0,
+	parser.add_argument("--min_frequency", type=int, default=5,
                      help="The minimum number of times a word need to appear to be included in the vocabulary. If set to 0 or negative, all words are included.")
 	parser.add_argument("--subsample_threshold", type=float, default=1e-5,
                      help="Threshold for subsampling frequent words. Set to 0 to disable.")
