@@ -36,7 +36,7 @@ python scripts/preprocess.py -h
 
 ## 4. Train The Model
 ```bash
-python scripts/train.py --preproc_dir_name=cs0-mf5-st1e-05 --epoch=5 --batch_size=32 --initial_lr=2 --final_lr=0.001 --num_neg_samples=5 --window_size=5 --embed_dim=100
+python scripts/train.py --preproc_dir_name=cs0-mf5-st1e-05 --epoch=5 --batch_size=32 --initial_lr=4 --final_lr=0.002 --num_neg_samples=5 --window_size=5 --embed_dim=100
 ```
 
 For more information about the arguments, run:
@@ -60,7 +60,7 @@ python scripts/evaluate.py --model_path=RELATIVE/PATH/TO/MODEL/FILE --word_map_p
 
 A demo is available with:
 ```bash
-python scripts/evaluate.py --model_path=models/good/model.npz --word_map_path=models/good/word_id_map.pkl
+python scripts/evaluate.py --model_path=models/demo/model.npz --word_map_path=models/demo/word_id_map.pkl
 ```
 
 
