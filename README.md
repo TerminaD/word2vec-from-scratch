@@ -12,3 +12,7 @@ python scripts/train.py --preproc_dir_name=cs0-mf5 --epoch=5 --batch_size=256 --
 ```bash
 python scripts/train.py --preproc_dir_name=cs500000-mf0 --epoch=50 --batch_size=512 --initial_lr=0.025 --final_lr=1e-4 --num_neg_samples=5 --window_size=5 --embed_dim=50
 ```
+
+```bash
+python scripts/evaluate.py --model_path="models/2026-03-21-00-57-29/model.npz" --word_map_path="models/2026-03-21-00-57-29/word_id_map.pkl"
+```

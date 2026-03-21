@@ -65,17 +65,15 @@ class Word2VecSGNS:
 
         pos_intermediate = self._pos_sigmoid - 1  # Actual batch size
         neg_intermediate = 1 - self._neg_sigmoid  # Actual batch size * num_negative_samples
-        
-        # Gradients are normalized by actual batch size, to match mean loss
+
         actual_batch_size = pos_intermediate.shape[0]
 
-        self._center_grad = pos_intermediate[:, np.newaxis] * self._pos_embeds + \
-            np.sum(neg_intermediate[:, :, np.newaxis] * self._neg_embeds, axis=1)  # Actual batch size * embed_dim
-        # self._center_grad /= actual_batch_size
-            
+        self._center_grad = (pos_intermediate[:, np.newaxis] * self._pos_embeds + \
+            np.sum(neg_intermediate[:, :, np.newaxis] * self._neg_embeds, axis=1)) / actual_batch_size  # Actual batch size * embed_dim
+
         # Actual batch size * embed_dim
         self._pos_grad = pos_intermediate[:, np.newaxis] * self._center_embeds / actual_batch_size
-        
+
         # Actual batch size * num_negative_samples * embed_dim
         self._neg_grad = neg_intermediate[:, :, np.newaxis] * self._center_embeds[:, np.newaxis, :] / actual_batch_size
 

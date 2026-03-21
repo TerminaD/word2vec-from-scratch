@@ -12,6 +12,7 @@ import shutil
 from src.dataloader import DataloaderSGNS
 from src.model import Word2VecSGNS
 from src.optimizer import SGDDecayOptimizer
+from src.evaluator import CosineSimilaritySpearmanEvaluator
 
 DATA_DIR = "data"
 MODELS_DIR = "models"
@@ -82,6 +83,9 @@ def main():
     optimizer = SGDDecayOptimizer(model, args.initial_lr, args.final_lr)
     dataloader = DataloaderSGNS(word_id_array, vocab_size, args.batch_size, args.num_neg_samples, args.window_size)
     
+    with open(os.path.join(DATA_DIR, "ws-353.csv")) as csv_f:
+        evaluator = CosineSimilaritySpearmanEvaluator(csv_f, word_id_map)
+
     writer = SummaryWriter(f"runs/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}")
     
     total_batches = len(dataloader) * args.epoch
@@ -101,10 +105,13 @@ def main():
 
         avg_loss = sum(loss_list) / len(loss_list)
         writer.add_scalar("Loss/train", avg_loss, e)
+        spearman = evaluator.evaluate(model)
+        writer.add_scalar("Spearman/eval", spearman, e)
 
         if (e + 1) % 5 == 0:
-            checkpoint_path = os.path.join(curr_models_dir, f"checkpoint_epoch_{e + 1}.npz")
+            checkpoint_path = os.path.join(curr_models_dir, f"epoch_{e + 1}.npz")
             np.savez(checkpoint_path, **model.get_parameters())
+            print(f"Model saved for epoch {e+1}")
 
     save_path = os.path.join(curr_models_dir, "model.npz")
     np.savez(save_path, **model.get_parameters())
