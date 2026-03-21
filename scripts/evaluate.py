@@ -1,14 +1,15 @@
-import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
+import pickle
 import argparse
 import numpy as np
-import pickle
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.model import Word2VecSGNS
 from src.evaluator import CosineSimilaritySpearmanEvaluator
 
 EVAL_SET_FULL_PATH = os.path.join("data", "ws-353.csv")
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Evaluation script")
@@ -42,8 +43,9 @@ def main():
         evaluator = CosineSimilaritySpearmanEvaluator(csv_f, word_id_map)
         
     val = evaluator.evaluate(model)
-    print(f"Spearman's: {val}")
+    print(f"SRCC: {val}")
     
 
 if __name__ == '__main__':
     main()
+    

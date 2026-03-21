@@ -1,13 +1,14 @@
+import os
 import shutil
-import urllib.request
 import zipfile
+import urllib.request
 from pathlib import Path
 
 URL = "http://mattmahoney.net/dc/text8.zip"
-DATA_DIR = Path("data")
-ZIP_PATH = DATA_DIR / "text8.zip"
-EXTRACTED_PATH = DATA_DIR / "text8"
-TXT_PATH = DATA_DIR / "text8.txt"
+DATA_DIR = "data"
+ZIP_PATH = os.path.join(DATA_DIR, "text8.zip")
+EXTRACTED_PATH = os.path.join(DATA_DIR, "text8")
+TXT_PATH = os.path.join(DATA_DIR, "text8.txt")
 
 
 def main():
@@ -41,4 +42,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

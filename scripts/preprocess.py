@@ -1,9 +1,10 @@
-import argparse
-import numpy as np
 import os
 import pickle
+import argparse
+import numpy as np
 
 DATASET_PATH = "data/text8.txt"
+
 
 def build_parser():
 	parser = argparse.ArgumentParser(description="Dataset preprocessing script")
@@ -39,6 +40,7 @@ def main():
     word_id_map = {}
     curr_word_id = 0
 
+    # Frequency cutoff
     if args.min_frequency > 1:
         for word, freq in freq_map.items():
             if freq >= args.min_frequency:

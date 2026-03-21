@@ -1,16 +1,16 @@
-import argparse
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import datetime
-import numpy as np
 import pickle
+import shutil
+import datetime
+import argparse
+import numpy as np
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
-import shutil
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.dataloader import DataloaderSGNS
 from src.model import Word2VecSGNS
+from src.dataloader import DataloaderSGNS
 from src.optimizer import SGDDecayOptimizer
 from src.evaluator import CosineSimilaritySpearmanEvaluator
 
@@ -18,6 +18,7 @@ DATA_DIR = "data"
 MODELS_DIR = "models"
 ARRAY_FILE_NAME = "word_id_array.npy"
 MAP_FILE_NAME = "word_id_map.pkl"
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Training script")
@@ -62,6 +63,7 @@ def build_parser():
         help="Dimension of the embedding vector",
     )
     return parser
+
 
 def main():
     parser = build_parser()
